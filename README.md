@@ -1,25 +1,42 @@
-# Ansible-Lab_Conditionals
+# Use Case :Ansible-Lab_Conditionals
 
-1. The playbook file
-2. A `README.md` explaining its purpose and usage
-3. Optional `.gitignore`
+Playbook /home/bob/playbooks/nameserver.yaml attempts to add an entry in /etc/resolv.conf file to add a new nameserver.
 
----
+The first task in the playbook is using the shell module to display the existing contents of /etc/resolv.conf file and the second one is adding a new line containing the name server details into the file. However, when this playbook is run multiple times, it keeps adding new entries of same line into the resolv.conf file. To resolve this issue, update the playbook as per details mentioned below.
 
-### 📁 Directory structure suggestion
+Add a register directive to store the output of the first task to a variable called command_output
 
-```
-nameserver-playbook/
-├── nameserver.yaml
-├── README.md
-└── .gitignore
-```
+Then add a conditional to the second task to check if the output already contains the name server (10.0.250.10). Use command_output.stdout.find(<IP>) == -1
+----------------------------------------------------------------------------------------------------------------------------------------------------------
+Note:
+a. A better way to do this would be to use the lineinfile module. This is just for practice.
 
----
 
-### ✅ `nameserver.yaml` (Your Playbook)
+b.shell and command modules are similar in a way that they are used to execute a command on the system. However, shell executes the command inside a shell giving us access to environment variables and redirection using >>.
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+### ✅ Solution :-
+You have a playbook (nameserver.yaml) that:
+First, shows what's currently inside the file /etc/resolv.conf
+Then, it adds a line with a DNS server: nameserver 10.0.250.10
 
-```yaml
+🛑 But there’s a problem:
+Every time you run this playbook, it keeps adding the same line again and again, even if it's already there!
+
+🛠️ What You Need to Fix:
+Save the output of the first command (contents of /etc/resolv.conf) using a variable — name it command_output.
+
+Before adding the new line, check if the line already exists using:
+when: command_output.stdout.find("10.0.250.10") == -1
+This tells Ansible: “Only add this line if it’s not already there.”
+
+📌 Why this matters:
+It helps avoid duplicate entries in the file.
+
+Though this can be done better using lineinfile module, you're learning how to use register and when conditions with the shell module.
+
+
+Here’s the corrected playbook with the fix using register and when to avoid duplicate entries in /etc/resolv.conf:
+
 ---
 - name: 'Add name server entry if not already entered'
   hosts: localhost
@@ -33,58 +50,12 @@ nameserver-playbook/
     - name: Add nameserver only if not present
       shell: echo "nameserver 10.0.250.10" >> /etc/resolv.conf
       when: command_output.stdout.find("10.0.250.10") == -1
-```
+---------------------------------------------------------------------------------------------------------------------------------
+### 🔍 Key Concepts Used:
 
----
-
-### 📝 `README.md`
-
-````markdown
-# Nameserver Playbook
-
-This Ansible playbook ensures that the specified nameserver (`10.0.250.10`) is added to `/etc/resolv.conf` **only if** it is not already present.
-
-## 🔧 Use Case
-
-Prevents duplicate entries of nameserver in `/etc/resolv.conf` when the playbook is run multiple times.
-
-## 📋 How It Works
-
-- First task reads the current content of `/etc/resolv.conf`.
-- Second task checks if the nameserver already exists.
-- If not, it appends the nameserver to the file.
-
-## ▶️ Usage
-
-Run the playbook using:
-
-```bash
-ansible-playbook nameserver.yaml
-````
-
-Ensure you have appropriate `sudo` permissions.
-
-## 🔐 Prerequisites
-
-* Ansible installed
-* Localhost inventory or specified in `/etc/ansible/hosts`
-
-## 🧼 Recommendation
-
-For production usage, consider using the `lineinfile` module for idempotent line management.
-
-````
-
----
-
-### 🙅 `.gitignore` (Optional)
-
-```gitignore
-*.retry
-*.log
-*.bak
-````
-
----
-
-Let me know if you'd like to push this to a GitHub repo or want a version using the `lineinfile` module instead.
+| Concept           | Explanation                                                      |
+| ----------------- | ---------------------------------------------------------------- |
+| `register`        | Saves output of a command to a variable (`command_output`).      |
+| `stdout`          | This is the actual text output from the command.                 |
+| `when`            | Runs the second task **only if** the condition is true.          |
+| `find(...) == -1` | Checks if the string is **not found** (i.e., needs to be added). |
