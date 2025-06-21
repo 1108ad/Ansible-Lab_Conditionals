@@ -1,5 +1,4 @@
 # Ansible-Lab_Conditionals
-Here's a clean and well-documented content structure you can use to store the playbook in a Git repository. This includes:
 
 1. The playbook file
 2. A `README.md` explaining its purpose and usage
