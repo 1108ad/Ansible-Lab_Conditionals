@@ -6,6 +6,18 @@ The first task in the playbook is using the shell module to display the existing
 
 Add a register directive to store the output of the first task to a variable called command_output
 
+initial playbook is:-----------------------------------------------
+---
+- name: 'Add name server entry if not already entered'
+  hosts: localhost
+  become: yes
+  tasks:
+    - shell: 'cat /etc/resolv.conf'
+
+    - shell: 'echo "nameserver 10.0.250.10" >> /etc/resolv.conf'"
+ 
+---------------------------------------------------------------------
+
 Then add a conditional to the second task to check if the output already contains the name server (10.0.250.10). Use command_output.stdout.find(<IP>) == -1
 ----------------------------------------------------------------------------------------------------------------------------------------------------------
 Note:
