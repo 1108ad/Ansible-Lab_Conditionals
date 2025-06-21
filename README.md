@@ -6,26 +6,26 @@ The first task in the playbook is using the shell module to display the existing
 
 Add a register directive to store the output of the first task to a variable called command_output
 
-initial playbook is:-----------------------------------------------
----
-- name: 'Add name server entry if not already entered'
-  hosts: localhost
-  become: yes
-  tasks:
-    - shell: 'cat /etc/resolv.conf'
+## initial playbook is:-----------------------------------------------
+#---
+#- name: 'Add name server entry if not already entered'
+#  hosts: localhost
+#  become: yes
+#  tasks:
+#    - shell: 'cat /etc/resolv.conf'
 
-    - shell: 'echo "nameserver 10.0.250.10" >> /etc/resolv.conf'"
+#   - shell: 'echo "nameserver 10.0.250.10" >> /etc/resolv.conf'"
  
----------------------------------------------------------------------
+##---------------------------------------------------------------------
 
 Then add a conditional to the second task to check if the output already contains the name server (10.0.250.10). Use command_output.stdout.find(<IP>) == -1
-----------------------------------------------------------------------------------------------------------------------------------------------------------
+#----------------------------------------------------------------------------------------------------------------------------------------------------------
 Note:
 a. A better way to do this would be to use the lineinfile module. This is just for practice.
 
 
 b.shell and command modules are similar in a way that they are used to execute a command on the system. However, shell executes the command inside a shell giving us access to environment variables and redirection using >>.
-------------------------------------------------------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------------------------------------------------------
 ### ✅ Solution :-
 You have a playbook (nameserver.yaml) that:
 First, shows what's currently inside the file /etc/resolv.conf
@@ -49,19 +49,19 @@ Though this can be done better using lineinfile module, you're learning how to u
 
 Here’s the corrected playbook with the fix using register and when to avoid duplicate entries in /etc/resolv.conf:
 
----
-- name: 'Add name server entry if not already entered'
-  hosts: localhost
-  become: yes
-  tasks:
+#---
+#- name: 'Add name server entry if not already entered'
+#  hosts: localhost
+#  become: yes
+#  tasks:
 
-    - name: Read current contents of resolv.conf
-      shell: cat /etc/resolv.conf
-      register: command_output
+#    - name: Read current contents of resolv.conf
+#      shell: cat /etc/resolv.conf
+#      register: command_output
 
-    - name: Add nameserver only if not present
-      shell: echo "nameserver 10.0.250.10" >> /etc/resolv.conf
-      when: command_output.stdout.find("10.0.250.10") == -1
+#    - name: Add nameserver only if not present
+#      shell: echo "nameserver 10.0.250.10" >> /etc/resolv.conf
+#      when: command_output.stdout.find("10.0.250.10") == -1
 ---------------------------------------------------------------------------------------------------------------------------------
 ### 🔍 Key Concepts Used:
 
